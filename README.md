@@ -32,7 +32,7 @@ composer require devlabor/api
 
 You can optionally publish the config file with:
 ```bash
-php artisan vendor:publish --provider="DevLabor\Api\ApiServiceProvider" --tag="config"
+php artisan vendor:publish --tag=api
 ```
 
 This is the contents of the published config file:
@@ -48,6 +48,39 @@ return [
 ```
 
 ## Usage
+
+### Configure policy authorization
+
+By adapting the `$authorizeAbilities` member in the controller class, the authorization check can be partially restricted. 
+```php
+// ...
+
+protected $authorizeAbilities = [
+'viewAny', // index
+'view', // show
+'store',
+'update',
+'destroy'
+];
+```
+
+For more information about policies, take a look at Laravel's [Creating Policies](https://laravel.com/docs/5.8/authorization#creating-policies)
+
+### Disable policy authorization
+
+You are able to disable the complete check with following member change in your controller class.
+
+```php
+protected $authorizeAbilities = false;
+```
+
+Extend your API routes within `routes/api.php`:
+
+```php
+// ...
+
+Route::resource('products', 'Api\ProductApiController');
+```
 
 
 ### Testing
