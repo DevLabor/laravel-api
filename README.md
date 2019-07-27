@@ -27,7 +27,7 @@ Route::resource('products', 'Api\ProductApiController');
 You can install the package via composer:
 
 ```bash
-composer require devlabor/api
+composer require devlabor/laravel-api
 ```
 
 You can optionally publish the config file with:
