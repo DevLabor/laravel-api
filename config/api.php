@@ -1,7 +1,10 @@
 <?php
 
-[
+return [
 	'pagination' => [
-		'count' => 20
+		/**
+		 * Number of items returned in index()
+		 */
+		'items' => 20
 	]
-]
+];

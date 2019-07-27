@@ -14,7 +14,7 @@ class ApiServiceProvider extends ServiceProvider
     public function register()
     {
         $this->publishes([
-			__DIR__ . '/config/api.php' => config_path('api.php'),
+			__DIR__ . '/../config/api.php' => config_path('api.php'),
 		]);
     }
 
@@ -25,6 +25,6 @@ class ApiServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-		$this->app->make('DevLabor\Api\Http\Controller\ApiController');
+	    //
     }
 }

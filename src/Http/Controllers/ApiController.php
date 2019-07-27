@@ -2,6 +2,8 @@
 
 namespace DevLabor\Api\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
@@ -19,9 +21,9 @@ class ApiController extends Controller
 
 	/**
 	 * Posts per api call
-	 * @var array
+	 * @var integer|null
 	 */
-	protected $perPage = 20;
+	protected $perPage = null;
 
 	/**
 	 * List of allowed includes
@@ -54,6 +56,18 @@ class ApiController extends Controller
 	protected $allowedFields = [];
 
 	/**
+	 * Define list of methods with authorization.
+	 * @var array 
+	 */
+	protected $authorizeAbilities = [
+		'viewAny',
+		'view',
+		'store',
+		'update',
+		'destroy'
+	];
+
+	/**
 	 * Validation rules for store and update.
 	 * @var array
 	 */
@@ -71,12 +85,19 @@ class ApiController extends Controller
 	 * ApiController constructor.
 	 */
 	public function __construct() 
-	{
-		$this->perPage = config('api.pagination.count', 20);
-		
-		$this->middleware('auth:api')->except('index', 'show');
+	{		
+		$this->middleware('auth:api');
 	}
 
+	/**
+	 * Finds model class name.
+	 *
+	 * @return Model
+	 */
+	protected function findModel($modelClass, $id) {
+		return $modelClass::findOrFail($id);
+	}
+	
 	/**
 	 * Guess model class name.
 	 *
@@ -88,15 +109,6 @@ class ApiController extends Controller
 		}
 
 		return $this->modelClass;
-	}
-
-	/**
-	 * Guesses resource collection class name.
-	 *
-	 * @return string
-	 */
-	protected function guessResourceCollectionClass() {
-		return $this->guessResourceClass() . 'Collection';
 	}
 
 	/**
@@ -154,12 +166,37 @@ class ApiController extends Controller
 	}
 
 	/**
+	 * Returns allowed methods.
+	 *
+	 * @return array
+	 */
+	protected function getAuthorizeAbilities() {
+		return $this->authorizeAbilities;
+	}
+
+	/**
 	 * Returns custom where clauses
 	 *
 	 * @return null
 	 */
 	protected function getWhereClauses() {
 		return [];
+	}
+
+	/**
+	 * Returns true if method should authorize.
+	 * 
+	 * @param $ability
+	 *
+	 * @return bool
+	 */
+	protected function shouldAuthorize($ability) {
+		$abilities = $this->getAuthorizeAbilities();
+		if (!is_array($abilities)) {
+			return false;
+		}
+		
+		return in_array($ability, $abilities);
 	}
 
 	/**
@@ -217,15 +254,22 @@ class ApiController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function index()
     {
 	    $modelClass = $this->guessModelClass();
-	    $collectionClass = $this->guessResourceCollectionClass();
+	    $resourceClass = $this->guessResourceClass();
 
-	    // authorize permission
-	    $this->authorizeResource($modelClass);
+	    try {
+		    // authorize permission
+		    if ($this->shouldAuthorize('viewAny')) {
+			    $this->authorize( 'viewAny', $modelClass );
+		    }
+	    }
+	    catch (\Exception $e) {
+		    return $this->getErrorResponse($e->getMessage());
+	    }
 
 	    $results = QueryBuilder::for($modelClass)
 	    	        ->allowedIncludes($this->getAllowedIncludes())
@@ -235,7 +279,7 @@ class ApiController extends Controller
 		            ->allowedFields($this->getAllowedFields())
 	                ->where($this->getWhereClauses());
 
-	    return new $collectionClass($results->paginate($this->perPage)->appends( Input::except('page') ) );
+	    return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( Input::except('page') ) );
     }
 
     /**
@@ -248,9 +292,6 @@ class ApiController extends Controller
     {
 	    $modelClass = $this->guessModelClass();
 
-	    // authorize permission
-	    $this->authorizeResource($modelClass);
-
 	    $validation = Validator::make($request->all(), $this->getValidationRules('store'));
 
 	    if($validation->fails()){
@@ -258,6 +299,11 @@ class ApiController extends Controller
 	    }
 
 	    try {
+		    // authorize permission
+		    if ($this->shouldAuthorize(['store', 'create'])) {
+			    $this->authorize( 'store', $modelClass );
+		    }
+		    
 		    $model = $modelClass::create($validation->validated());
 	    }
 	    catch (\Exception $e) {
@@ -284,9 +330,15 @@ class ApiController extends Controller
 		                ->allowedFields($this->getAllowedFields())
 			            ->where('id', $id)
 			            ->first();
-
+		    		    
 		    // authorize permission
-		    $this->authorizeResource($model);
+		    if ($this->shouldAuthorize('view')) {
+			    $this->authorize( 'view', $model );
+		    }
+		    
+		    if (!$model) {
+		    	throw (new ModelNotFoundException)->setModel($modelClass, $id);
+		    }
 	    }
 	    catch (\Exception $e) {
 		    return $this->getErrorResponse($e->getMessage());
@@ -314,10 +366,12 @@ class ApiController extends Controller
 	    }
 
 	    try {
-		    $model = $modelClass::findOrFail($id);
+		    $model = $this->findModel($modelClass, $id);
 
 		    // authorize permission
-		    $this->authorizeResource($model);
+		    if ($this->shouldAuthorize(['update', 'edit'])) {
+			    $this->authorize( 'update', $model );
+		    }
 
 		    $model->update($validation->validated());
 	    }
@@ -339,10 +393,12 @@ class ApiController extends Controller
 	    $modelClass = $this->guessModelClass();
 
 	    try {
-		    $model = $modelClass::findOrFail($id);
+		    $model = $this->findModel($modelClass, $id);
 
 		    // authorize permission
-		    $this->authorizeResource($model);
+		    if ($this->shouldAuthorize('destroy')) {
+			    $this->authorize( 'destroy', $model );
+		    }
 
 		    $model->delete();
 	    }
