@@ -1,9 +1,17 @@
 {
     "name": "devlabor/api",
 	"version": "1.0.0-dev",
+	"keywords": [
+		"devlabor",
+		"api",
+		"spatie",
+		"laravel-query-builder",
+		"laravel"
+	],
+	"homepage": "https://github.com/devlabor/api",
+	"license": "MIT",
     "require": {
         "laravel/framework": "^5.8",
-		"laravel/passport": "^7.2",
         "spatie/laravel-query-builder": "^1.17"
     },
     "authors": [
@@ -13,11 +21,17 @@
         }
     ],
     "minimum-stability": "dev",
+	"autoload": {
+		"psr-4": {
+			"DevLabor\\Api\\": "src/"
+		}
+	},
     "extra": {
         "laravel": {
             "providers": [
-                "devlabor\\api\\ApiServiceProvider"
+                "DevLabor\\Api\\ApiServiceProvider"
             ]
         }
-    }
+    },
+	"prefer-stable": true
 }

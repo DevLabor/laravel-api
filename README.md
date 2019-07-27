@@ -10,7 +10,7 @@ use DevLabor\Api\ApiController;
 // ...
 
 class ProductApiController extends ApiController {
-	//
+// ...
 }
 ```
 
@@ -23,7 +23,6 @@ Route::resource('products', 'Api\ProductApiController');
 ```
 
 ## Installation
-
 
 You can install the package via composer:
 
@@ -69,4 +68,6 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 If you discover any security related issues, please email office@devlabor.com instead of using the issue tracker.
 
+## License
 
+The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
