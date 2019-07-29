@@ -57,7 +57,7 @@ class ApiController extends Controller
 
 	/**
 	 * Define list of methods with authorization.
-	 * @var array 
+	 * @var array
 	 */
 	protected $authorizeAbilities = [
 		'viewAny',
@@ -84,8 +84,8 @@ class ApiController extends Controller
 	/**
 	 * ApiController constructor.
 	 */
-	public function __construct() 
-	{		
+	public function __construct()
+	{
 		$this->middleware('auth:api');
 	}
 
@@ -95,9 +95,20 @@ class ApiController extends Controller
 	 * @return Model
 	 */
 	protected function findModel($modelClass, $id) {
-		return $modelClass::findOrFail($id);
+		$model = QueryBuilder::for($modelClass)
+		                     ->allowedIncludes($this->getAllowedIncludes())
+		                     ->allowedAppends($this->getAllowedAppends())
+		                     ->allowedFields($this->getAllowedFields())
+		                     ->where('id', $id)
+		                     ->first();
+
+		if (!$model) {
+			throw (new ModelNotFoundException)->setModel($modelClass, $id);
+		}
+
+		return $model;
 	}
-	
+
 	/**
 	 * Guess model class name.
 	 *
@@ -185,7 +196,7 @@ class ApiController extends Controller
 
 	/**
 	 * Returns true if method should authorize.
-	 * 
+	 *
 	 * @param $ability
 	 *
 	 * @return bool
@@ -195,7 +206,7 @@ class ApiController extends Controller
 		if (!is_array($abilities)) {
 			return false;
 		}
-		
+
 		return in_array($ability, $abilities);
 	}
 
@@ -250,162 +261,175 @@ class ApiController extends Controller
 			'message' => $message
 		], Response::HTTP_BAD_REQUEST);
 	}
-	
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function index()
-    {
-	    $modelClass = $this->guessModelClass();
-	    $resourceClass = $this->guessResourceClass();
 
-	    try {
-		    // authorize permission
-		    if ($this->shouldAuthorize('viewAny')) {
-			    $this->authorize( 'viewAny', $modelClass );
-		    }
-	    }
-	    catch (\Exception $e) {
-		    return $this->getErrorResponse($e->getMessage());
-	    }
+	/**
+	 * Display a listing of the resource.
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function index()
+	{
+		$modelClass = $this->guessModelClass();
+		$resourceClass = $this->guessResourceClass();
 
-	    $results = QueryBuilder::for($modelClass)
-	    	        ->allowedIncludes($this->getAllowedIncludes())
-	                ->allowedFilters($this->getAllowedFilters())
-	                ->allowedSorts($this->getAllowedSorts())
-		            ->allowedAppends($this->getAllowedAppends())
-		            ->allowedFields($this->getAllowedFields())
-	                ->where($this->getWhereClauses());
+		try {
+			// authorize permission
+			if ($this->shouldAuthorize('viewAny')) {
+				$this->authorize( 'viewAny', $modelClass );
+			}
+		}
+		catch (\Exception $e) {
+			return $this->getErrorResponse($e->getMessage());
+		}
 
-	    return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( Input::except('page') ) );
-    }
+		$results = QueryBuilder::for($modelClass)
+		                       ->allowedIncludes($this->getAllowedIncludes())
+		                       ->allowedFilters($this->getAllowedFilters())
+		                       ->allowedSorts($this->getAllowedSorts())
+		                       ->allowedAppends($this->getAllowedAppends())
+		                       ->allowedFields($this->getAllowedFields())
+		                       ->where($this->getWhereClauses());
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(Request $request)
-    {
-	    $modelClass = $this->guessModelClass();
+		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( Input::except('page') ) );
+	}
 
-	    $validation = Validator::make($request->all(), $this->getValidationRules('store'));
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function store(Request $request)
+	{
+		$modelClass = $this->guessModelClass();
 
-	    if($validation->fails()){
+		$validation = Validator::make($request->all(), $this->getValidationRules('store'));
+
+		if($validation->fails()){
 			return $this->getErrorResponse($validation->errors());
-	    }
+		}
 
-	    try {
-		    // authorize permission
-		    if ($this->shouldAuthorize(['store', 'create'])) {
-			    $this->authorize( 'store', $modelClass );
-		    }
-		    
-		    $model = $modelClass::create($validation->validated());
-	    }
-	    catch (\Exception $e) {
-		    return $this->getErrorResponse($e->getMessage());
-	    }
+		try {
+			// authorize permission
+			if ($this->shouldAuthorize(['store', 'create'])) {
+				$this->authorize( 'store', $modelClass );
+			}
 
-	    return $this->getJsonResponse($model, Response::HTTP_OK);
-    }
+			$validated = $validation->validated();
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show($id)
-    {
-	    $modelClass = $this->guessModelClass();
+			$model = $modelClass::create($validation->validated());
+			$model = $this->saved($request, $model, $validated);
+		}
+		catch (\Exception $e) {
+			return $this->getErrorResponse($e->getMessage());
+		}
 
-	    try {
-		    $model = QueryBuilder::for($modelClass)
-		                ->allowedIncludes($this->getAllowedIncludes())
-		                ->allowedAppends($this->getAllowedAppends())
-		                ->allowedFields($this->getAllowedFields())
-			            ->where('id', $id)
-			            ->first();
-		    		    
-		    // authorize permission
-		    if ($this->shouldAuthorize('view')) {
-			    $this->authorize( 'view', $model );
-		    }
-		    
-		    if (!$model) {
-		    	throw (new ModelNotFoundException)->setModel($modelClass, $id);
-		    }
-	    }
-	    catch (\Exception $e) {
-		    return $this->getErrorResponse($e->getMessage());
-	    }
+		return $this->getJsonResponse($model, Response::HTTP_OK);
+	}
 
-	    return $this->getJsonResponse($model);
-    }
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param  int  $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function show($id)
+	{
+		$modelClass = $this->guessModelClass();
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(Request $request, $id)
-    {
-	    $modelClass = $this->guessModelClass();
+		try {
+			$model = $this->findModel($modelClass, $id);
 
-	    // validate given request
-	    $validation = Validator::make($request->all(), $this->getValidationRules('update'));
+			// authorize permission
+			if ($this->shouldAuthorize('view')) {
+				$this->authorize( 'view', $model );
+			}
 
-	    if($validation->fails()){
-		    return $this->getErrorResponse($validation->errors());
-	    }
+			if (!$model) {
+				throw (new ModelNotFoundException)->setModel($modelClass, $id);
+			}
+		}
+		catch (\Exception $e) {
+			return $this->getErrorResponse($e->getMessage());
+		}
 
-	    try {
-		    $model = $this->findModel($modelClass, $id);
+		return $this->getJsonResponse($model);
+	}
 
-		    // authorize permission
-		    if ($this->shouldAuthorize(['update', 'edit'])) {
-			    $this->authorize( 'update', $model );
-		    }
+	/**
+	 * Update the specified resource in storage.
+	 *
+	 * @param  \Illuminate\Http\Request  $request
+	 * @param  int  $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function update(Request $request, $id)
+	{
+		$modelClass = $this->guessModelClass();
 
-		    $model->update($validation->validated());
-	    }
-	    catch (\Exception $e) {
-		    return $this->getErrorResponse($e->getMessage());
-	    }
+		// validate given request
+		$validation = Validator::make($request->all(), $this->getValidationRules('update'));
 
-	    return $this->getJsonResponse($model, Response::HTTP_OK);
-    }
+		if($validation->fails()){
+			return $this->getErrorResponse($validation->errors());
+		}
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function destroy(Request $request, $id)
-    {
-	    $modelClass = $this->guessModelClass();
+		try {
+			$model = $this->findModel($modelClass, $id);
 
-	    try {
-		    $model = $this->findModel($modelClass, $id);
+			// authorize permission
+			if ($this->shouldAuthorize(['update', 'edit'])) {
+				$this->authorize( 'update', $model );
+			}
 
-		    // authorize permission
-		    if ($this->shouldAuthorize('destroy')) {
-			    $this->authorize( 'destroy', $model );
-		    }
+			$validated = $validation->validated();
 
-		    $model->delete();
-	    }
-	    catch (\Exception $e) {
-    		return $this->getErrorResponse($e->getMessage());
-	    }
+			$model->update($validated);
+			$model = $this->saved($request, $model, $validated);
+		}
+		catch (\Exception $e) {
+			return $this->getErrorResponse($e->getMessage());
+		}
 
-        return $this->getJsonResponse(null, Response::HTTP_OK);
-    }
+		return $this->getJsonResponse($model, Response::HTTP_OK);
+	}
+
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int  $id
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function destroy(Request $request, $id)
+	{
+		$modelClass = $this->guessModelClass();
+
+		try {
+			$model = $this->findModel($modelClass, $id);
+
+			// authorize permission
+			if ($this->shouldAuthorize('destroy')) {
+				$this->authorize( 'destroy', $model );
+			}
+
+			$model->delete();
+		}
+		catch (\Exception $e) {
+			return $this->getErrorResponse($e->getMessage());
+		}
+
+		return $this->getJsonResponse(null, Response::HTTP_OK);
+	}
+
+	/**
+	 * Executed after creating or updating.
+	 *
+	 * @param Request $request
+	 * @param null $model
+	 * @param array $validated
+	 * @return Model|null
+	 */
+	protected function saved(Request $request, $model = null, $validated = []) {
+		return $model;
+	}
 }
