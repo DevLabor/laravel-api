@@ -5,7 +5,7 @@ This package is based on "spatie/laravel-query-builder" allows you to rapidly cr
 Create a new API controller: `ProductApiController`:
 
 ```php
-use DevLabor\Api\ApiController;
+use DevLabor\Api\Http\Controllers\ApiController;
 
 // ...
 
@@ -21,6 +21,18 @@ Extend your API routes within `routes/api.php`:
 
 Route::resource('products', 'Api\ProductApiController');
 ```
+
+Sometimes you need an identifcation for the object in your api. For this reason, you can use the `DevLabor\Api\Http\Resources\ApiResource` as base class for your own resource classes:
+
+```php
+use DevLabor\Api\Http\Resources\ApiResource;
+
+class Product extends ApiResource {
+//
+}
+```
+
+
 
 ## Installation
 
