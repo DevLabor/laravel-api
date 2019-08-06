@@ -314,10 +314,10 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize(['store', 'create'])) {
 				$this->authorize( 'store', $modelClass );
 			}
-
-			$validated = $validation->validated();
-
-			$model = $modelClass::create($validation->validated());
+			
+			$validated = $this->creating($request, $validation->validated());
+			
+			$model = $modelClass::create($validated);
 			$model = $this->saved($request, $model, $validated);
 		}
 		catch (\Exception $e) {
@@ -381,9 +381,9 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize(['update', 'edit'])) {
 				$this->authorize( 'update', $model );
 			}
-
-			$validated = $validation->validated();
-
+			
+			$validated = $this->updating($request, $model, $validation->validated());
+			
 			$model->update($validated);
 			$model = $this->saved($request, $model, $validated);
 		}
@@ -411,7 +411,7 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize('destroy')) {
 				$this->authorize( 'destroy', $model );
 			}
-
+			
 			$model->delete();
 		}
 		catch (\Exception $e) {
@@ -431,5 +431,28 @@ class ApiController extends Controller
 	 */
 	protected function saved(Request $request, $model = null, $validated = []) {
 		return $model;
+	}
+
+	/**
+	 * Executed before creating.
+	 *
+	 * @param Request $request
+	 * @param array $validated
+	 * @return array
+	 */
+	protected function creating(Request $request, $validated = []) {
+		return $validated;
+	}
+
+	/**
+	 * Executed before updating.
+	 *
+	 * @param Request $request
+	 * @param Model|null $model
+	 * @param array $validated
+	 * @return array
+	 */
+	protected function updating(Request $request, $model = null, $validated = []) {
+		return $validated;
 	}
 }
