@@ -317,14 +317,16 @@ class ApiController extends Controller
 			
 			$validated = $this->creating($request, $validation->validated());
 			
-			$model = $modelClass::create($validated);
-			$model = $this->saved($request, $model, $validated);
+			if ($validated) {
+				$model = $modelClass::create( $validated );
+				$model = $this->saved( $request, $model, $validated );
+			}
 		}
 		catch (\Exception $e) {
 			return $this->getErrorResponse($e->getMessage());
 		}
 
-		return $this->getJsonResponse($model, Response::HTTP_OK);
+		return $this->getJsonResponse($model ?? null, Response::HTTP_OK);
 	}
 
 	/**
@@ -384,8 +386,10 @@ class ApiController extends Controller
 			
 			$validated = $this->updating($request, $model, $validation->validated());
 			
-			$model->update($validated);
-			$model = $this->saved($request, $model, $validated);
+			if ($validated) {
+				$model->update( $validated );
+				$model = $this->saved( $request, $model, $validated );
+			}
 		}
 		catch (\Exception $e) {
 			return $this->getErrorResponse($e->getMessage());
