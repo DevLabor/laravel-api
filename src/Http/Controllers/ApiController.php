@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -96,9 +95,9 @@ class ApiController extends Controller
 	 */
 	protected function findModel($modelClass, $id) {
 		$model = QueryBuilder::for($modelClass)
+                             ->allowedFields($this->getAllowedFields())
 		                     ->allowedIncludes($this->getAllowedIncludes())
 		                     ->allowedAppends($this->getAllowedAppends())
-		                     ->allowedFields($this->getAllowedFields())
 		                     ->where('id', $id)
 		                     ->first();
 
@@ -283,14 +282,14 @@ class ApiController extends Controller
 		}
 
 		$results = QueryBuilder::for($modelClass)
+                               ->allowedFields($this->getAllowedFields())
 		                       ->allowedIncludes($this->getAllowedIncludes())
 		                       ->allowedFilters($this->getAllowedFilters())
 		                       ->allowedSorts($this->getAllowedSorts())
 		                       ->allowedAppends($this->getAllowedAppends())
-		                       ->allowedFields($this->getAllowedFields())
 		                       ->where($this->getWhereClauses());
 
-		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( Input::except('page') ) );
+		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( \Illuminate\Support\Facades\Request::except('page') ) );
 	}
 
 	/**
@@ -314,9 +313,9 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize(['store', 'create'])) {
 				$this->authorize( 'store', $modelClass );
 			}
-			
+
 			$validated = $this->creating($request, $validation->validated());
-			
+
 			if ($validated) {
 				$model = $modelClass::create( $validated );
 				$model = $this->saved( $request, $model, $validated );
@@ -326,7 +325,7 @@ class ApiController extends Controller
 			return $this->getErrorResponse($e->getMessage());
 		}
 
-		return $this->getJsonResponse($model ?? null, Response::HTTP_OK);
+		return $this->getJsonResponse($model ?? null, Response::HTTP_CREATED);
 	}
 
 	/**
@@ -383,9 +382,9 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize(['update', 'edit'])) {
 				$this->authorize( 'update', $model );
 			}
-			
+
 			$validated = $this->updating($request, $model, $validation->validated());
-			
+
 			if ($validated) {
 				$model->update( $validated );
 				$model = $this->saved( $request, $model, $validated );
@@ -415,7 +414,7 @@ class ApiController extends Controller
 			if ($this->shouldAuthorize('destroy')) {
 				$this->authorize( 'destroy', $model );
 			}
-			
+
 			$model->delete();
 		}
 		catch (\Exception $e) {

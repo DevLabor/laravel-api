@@ -1,18 +1,18 @@
 {
     "name": "devlabor/laravel-api",
-	"version": "1.0.0-dev",
-	"keywords": [
-		"devlabor",
-		"api",
-		"spatie",
-		"laravel-query-builder",
-		"laravel"
-	],
-	"homepage": "https://github.com/devlabor/laravel-api",
-	"license": "MIT",
+    "version": "1.0.0-dev",
+    "keywords": [
+        "devlabor",
+        "api",
+        "spatie",
+        "laravel-query-builder",
+        "laravel"
+    ],
+    "homepage": "https://github.com/devlabor/laravel-api",
+    "license": "MIT",
     "require": {
         "laravel/framework": "^5.8",
-        "spatie/laravel-query-builder": "^1.17"
+        "spatie/laravel-query-builder": "^2.1"
     },
     "authors": [
         {
@@ -21,11 +21,16 @@
         }
     ],
     "minimum-stability": "dev",
-	"autoload": {
-		"psr-4": {
-			"DevLabor\\Api\\": "src/"
-		}
-	},
+    "autoload": {
+        "psr-4": {
+            "DevLabor\\Api\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "DevLabor\\Api\\Tests\\": "tests"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
@@ -33,5 +38,8 @@
             ]
         }
     },
-	"prefer-stable": true
+    "prefer-stable": true,
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    }
 }
