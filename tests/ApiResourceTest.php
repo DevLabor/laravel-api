@@ -7,6 +7,10 @@ use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class ApiResourceTest extends TestCase {
+    /**
+     * Last insert id.
+     * @var integer
+     */
     public static $lastInsert = null;
 
     /**
@@ -115,10 +119,10 @@ class ApiResourceTest extends TestCase {
 
         $response
             ->assertStatus(Response::HTTP_OK)
-            ->assertJson([
-                'data' => [],
-                'links' => [],
-                'meta' => [],
+            ->assertJsonStructure([
+                'data',
+                'links',
+                'meta',
             ]);
     }
 
@@ -130,12 +134,17 @@ class ApiResourceTest extends TestCase {
         $response = $this->post($this->guessRoute('store'), $this->getPayload());
 
         $data = $response->json();
-        self::$lastInsert = $data['id'];
+
+        if (isset($data['id'])) {
+            self::$lastInsert = $data['id'];
+        }
 
         $response
             ->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonStructure([
+                'id'
+            ])
             ->assertJson([
-                'id' => self::$lastInsert,
                 '_model' => [
                     'endpoint' => $this->guessRouteName()
                 ]
