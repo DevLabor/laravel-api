@@ -38,6 +38,12 @@ class ApiResourceTest extends TestCase {
     protected $routeName = null;
 
     /**
+     * Prefix for api route.
+     * @var string
+     */
+    protected $routeApiPrefix = 'api';
+
+    /**
      * Payload.
      * @var array
      */
@@ -94,7 +100,7 @@ class ApiResourceTest extends TestCase {
      * @return null|string
      */
     protected function guessRoute($action, $parameters = []) {
-        return route(Str::snake(Str::plural(class_basename($this->guessModelClass()))) . '.' . $action, $parameters);
+        return route(($this->routeApiPrefix ? $this->routeApiPrefix . '.' : '') . Str::snake(Str::plural(class_basename($this->guessModelClass()))) . '.' . $action, $parameters);
     }
 
     /**
