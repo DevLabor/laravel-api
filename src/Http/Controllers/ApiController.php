@@ -25,6 +25,12 @@ class ApiController extends Controller
 	protected $perPage = null;
 
 	/**
+	 * Default sort
+	 * @var array
+	 */
+	protected $defaultSorts = [];
+
+	/**
 	 * List of allowed includes
 	 * @var array
 	 */
@@ -176,6 +182,15 @@ class ApiController extends Controller
 	}
 
 	/**
+	 * Returns default sorts.
+	 *
+	 * @return array
+	 */
+	protected function getDefaultSorts() {
+		return $this->defaultSorts;
+	}
+
+	/**
 	 * Returns allowed methods.
 	 *
 	 * @return array
@@ -282,12 +297,13 @@ class ApiController extends Controller
 		}
 
 		$results = QueryBuilder::for($modelClass)
-                               ->allowedFields($this->getAllowedFields())
-		                       ->allowedIncludes($this->getAllowedIncludes())
-		                       ->allowedFilters($this->getAllowedFilters())
-		                       ->allowedSorts($this->getAllowedSorts())
-		                       ->allowedAppends($this->getAllowedAppends())
-		                       ->where($this->getWhereClauses());
+                                ->allowedFields($this->getAllowedFields())
+                                ->allowedIncludes($this->getAllowedIncludes())
+                                ->allowedFilters($this->getAllowedFilters())
+                                ->defaultSorts($this->getDefaultSorts())
+                                ->allowedSorts($this->getAllowedSorts())
+                                ->allowedAppends($this->getAllowedAppends())
+                                ->where($this->getWhereClauses());
 
 		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( \Illuminate\Support\Facades\Request::except('page') ) );
 	}

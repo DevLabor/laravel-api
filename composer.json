@@ -1,6 +1,6 @@
 {
     "name": "devlabor/laravel-api",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "keywords": [
         "devlabor",
         "api",
@@ -14,21 +14,24 @@
         "laravel/framework": "^5.8",
         "spatie/laravel-query-builder": "^2.1"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0|^8.0",
+        "ext-json": "*"
+    },
     "authors": [
         {
             "name": "Kiv4h",
             "email": "reichardt@devlabor.com"
         }
     ],
-    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
-            "DevLabor\\Api\\": "src"
+            "DevLabor\\Api\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "DevLabor\\Api\\Tests\\": "tests"
+            "DevLabor\\Api\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -38,6 +41,7 @@
             ]
         }
     },
+    "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
         "test": "vendor/bin/phpunit"
