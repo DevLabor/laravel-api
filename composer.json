@@ -1,6 +1,6 @@
 {
     "name": "devlabor/laravel-api",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "keywords": [
         "devlabor",
         "api",
@@ -11,7 +11,7 @@
     "homepage": "https://github.com/devlabor/laravel-api",
     "license": "MIT",
     "require": {
-        "laravel/framework": "^5.8",
+        "laravel/framework": ">=5.8",
         "spatie/laravel-query-builder": "^2.1"
     },
     "require-dev": {
