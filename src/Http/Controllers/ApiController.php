@@ -243,6 +243,15 @@ class ApiController extends Controller
 		return $validationRules;
 	}
 
+    /**
+     * Returns per page count.
+     *
+     * @return \Illuminate\Config\Repository|mixed
+     */
+    protected function getPerPage() {
+	    return ($this->perPage ? : config('api.pagination.items', 20));
+    }
+
 	/**
 	 * Returns response as json data.
 	 *
@@ -281,7 +290,7 @@ class ApiController extends Controller
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index()
+	public function index(Request $request)
 	{
 		$modelClass = $this->guessModelClass();
 		$resourceClass = $this->guessResourceClass();
@@ -305,7 +314,8 @@ class ApiController extends Controller
                                 ->allowedAppends($this->getAllowedAppends())
                                 ->where($this->getWhereClauses());
 
-		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( \Illuminate\Support\Facades\Request::except('page') ) );
+		return $resourceClass::collection($results->paginate($this->getPerPage())
+                                                    ->appends( \Illuminate\Support\Facades\Request::except('page') ) );
 	}
 
 	/**
