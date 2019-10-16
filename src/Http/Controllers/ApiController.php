@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -249,7 +251,7 @@ class ApiController extends Controller
      * @return \Illuminate\Config\Repository|mixed
      */
     protected function getPerPage() {
-	    return ($this->perPage ? : config('api.pagination.items', 20));
+	    return request()->input('per_page', ($this->perPage ? : config('api.pagination.items', 20)));
     }
 
 	/**
@@ -313,6 +315,16 @@ class ApiController extends Controller
                                 ->allowedSorts($this->getAllowedSorts())
                                 ->allowedAppends($this->getAllowedAppends())
                                 ->where($this->getWhereClauses());
+
+        if ($request->input('limit')) {
+            $limit = intval($request->input('limit'));
+            $pageName = 'page';
+
+            return $resourceClass::collection((new LengthAwarePaginator($results->limit($limit)->get(), $limit, $this->getPerPage(), Paginator::resolveCurrentPage($pageName), [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]))->appends( \Illuminate\Support\Facades\Request::except('page')));
+        }
 
 		return $resourceClass::collection($results->paginate($this->getPerPage())
                                                     ->appends( \Illuminate\Support\Facades\Request::except('page') ) );
