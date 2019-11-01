@@ -4,9 +4,8 @@ namespace DevLabor\Api\Tests;
 
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
-use Tests\TestCase;
 
-class ApiResourceTest extends TestCase {
+trait ApiResourceTest {
     /**
      * Last insert id.
      * @var integer
@@ -24,12 +23,6 @@ class ApiResourceTest extends TestCase {
      * @var string
      */
     protected $factoryClass = null;
-
-    /**
-     * Uses factory class.
-     * @var string
-     */
-    protected $useFactory = false;
 
     /**
      * Guessed routeName.
@@ -104,12 +97,19 @@ class ApiResourceTest extends TestCase {
     }
 
     /**
+     * @return bool
+     */
+    protected function useFactory() {
+        return ($this->useFactory ? : false);
+    }
+
+    /**
      * Returns payload for store, update or destroy.
      *
      * @return array
      */
     protected function getPayload() {
-        if ($this->useFactory) {
+        if ($this->useFactory()) {
             return factory($this->guessFactoryClass())->raw();
         }
 
