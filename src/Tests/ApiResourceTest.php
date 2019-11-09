@@ -4,9 +4,8 @@ namespace DevLabor\Api\Tests;
 
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
-use Tests\TestCase;
 
-class ApiResourceTest extends TestCase {
+trait ApiResourceTest {
     /**
      * Last insert id.
      * @var integer
@@ -24,12 +23,6 @@ class ApiResourceTest extends TestCase {
      * @var string
      */
     protected $factoryClass = null;
-
-    /**
-     * Uses factory class.
-     * @var string
-     */
-    protected $useFactory = false;
 
     /**
      * Guessed routeName.
@@ -104,12 +97,19 @@ class ApiResourceTest extends TestCase {
     }
 
     /**
+     * @return bool
+     */
+    protected function useFactory() {
+        return ($this->useFactory ? : false);
+    }
+
+    /**
      * Returns payload for store, update or destroy.
      *
      * @return array
      */
     protected function getPayload() {
-        if ($this->useFactory) {
+        if ($this->useFactory()) {
             return factory($this->guessFactoryClass())->raw();
         }
 
@@ -121,7 +121,7 @@ class ApiResourceTest extends TestCase {
      */
     public function testIndex()
     {
-        $response = $this->get($this->guessRoute('index'));
+        $response = $this->json('GET', $this->guessRoute('index'));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -137,7 +137,7 @@ class ApiResourceTest extends TestCase {
      */
     public function testStore()
     {
-        $response = $this->post($this->guessRoute('store'), $this->getPayload());
+        $response = $this->json('POST', $this->guessRoute('store'), $this->getPayload());
 
         $data = $response->json();
 
@@ -162,7 +162,7 @@ class ApiResourceTest extends TestCase {
      */
     public function testShow()
     {
-        $response = $this->get($this->guessRoute('show', [ self::$lastInsert ]));
+        $response = $this->json('GET', $this->guessRoute('show', [ self::$lastInsert ]));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -178,7 +178,7 @@ class ApiResourceTest extends TestCase {
      */
     public function testUpdate()
     {
-        $response = $this->put($this->guessRoute('update', [ self::$lastInsert ]), $this->getPayload());
+        $response = $this->json('PUT', $this->guessRoute('update', [ self::$lastInsert ]), $this->getPayload());
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -194,7 +194,7 @@ class ApiResourceTest extends TestCase {
      */
     public function testDestroy()
     {
-        $response = $this->delete($this->guessRoute('destroy', [ self::$lastInsert ]));
+        $response = $this->json('DELETE', $this->guessRoute('destroy', [ self::$lastInsert ]));
 
         $response
             ->assertStatus(Response::HTTP_OK);

@@ -7,11 +7,19 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class ApiController extends Controller
 {
+    const AUTHORIZE_KEY_INDEX = 'viewAny';
+    const AUTHORIZE_KEY_SHOW = 'view';
+    const AUTHORIZE_KEY_STORE = 'store';
+    const AUTHORIZE_KEY_UPDATE = 'update';
+    const AUTHORIZE_KEY_DESTROY = 'destroy';
+
 	/**
 	 * Guessed model class.
 	 * @var string
@@ -65,11 +73,11 @@ class ApiController extends Controller
 	 * @var array
 	 */
 	protected $authorizeAbilities = [
-		'viewAny',
-		'view',
-		'store',
-		'update',
-		'destroy'
+		self::AUTHORIZE_KEY_INDEX,
+		self::AUTHORIZE_KEY_SHOW,
+        self::AUTHORIZE_KEY_STORE,
+        self::AUTHORIZE_KEY_UPDATE,
+        self::AUTHORIZE_KEY_DESTROY
 	];
 
 	/**
@@ -78,10 +86,10 @@ class ApiController extends Controller
 	 */
 	protected $validationRules = [
 		//...
-		'store' => [
+		self::AUTHORIZE_KEY_STORE => [
 			//...
 		],
-		'update' => [
+        self::AUTHORIZE_KEY_UPDATE => [
 			//...
 		]
 	];
@@ -97,10 +105,11 @@ class ApiController extends Controller
 	/**
 	 * Finds model class name.
 	 *
-	 * @return Model
+     * @param   $className
+	 * @return  Model
 	 */
-	protected function findModel($modelClass, $id) {
-		$model = QueryBuilder::for($modelClass)
+	protected function findModel($className, $id) {
+		$model = QueryBuilder::for($className)
                              ->allowedFields($this->getAllowedFields())
 		                     ->allowedIncludes($this->getAllowedIncludes())
 		                     ->allowedAppends($this->getAllowedAppends())
@@ -108,7 +117,7 @@ class ApiController extends Controller
 		                     ->first();
 
 		if (!$model) {
-			throw (new ModelNotFoundException)->setModel($modelClass, $id);
+			throw (new ModelNotFoundException)->setModel($className, $id);
 		}
 
 		return $model;
@@ -231,17 +240,26 @@ class ApiController extends Controller
 	 * @return  array
 	 */
 	protected function getValidationRules($action) {
-		$validationRules = $this->validationRules;
+		$rules = $this->validationRules;
 
-		unset($validationRules['store']);
-		unset($validationRules['update']);
+		unset($rules[self::AUTHORIZE_KEY_STORE]);
+		unset($rules[self::AUTHORIZE_KEY_UPDATE]);
 
 		if ($actionRules = data_get($this->validationRules, $action)) {
-			return array_merge($validationRules, $actionRules);
+			return array_merge($rules, $actionRules);
 		}
 
-		return $validationRules;
+		return $rules;
 	}
+
+    /**
+     * Returns per page count.
+     *
+     * @return \Illuminate\Config\Repository|mixed
+     */
+    protected function getPerPage() {
+	    return request()->input('per_page', ($this->perPage ? : config('api.pagination.items', 20)));
+    }
 
 	/**
 	 * Returns response as json data.
@@ -281,22 +299,22 @@ class ApiController extends Controller
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function index()
+	public function index(Request $request)
 	{
-		$modelClass = $this->guessModelClass();
+		$className = $this->guessModelClass();
 		$resourceClass = $this->guessResourceClass();
 
 		try {
 			// authorize permission
-			if ($this->shouldAuthorize('viewAny')) {
-				$this->authorize( 'viewAny', $modelClass );
+			if ($this->shouldAuthorize(self::AUTHORIZE_KEY_INDEX)) {
+				$this->authorize( self::AUTHORIZE_KEY_INDEX, $className );
 			}
 		}
 		catch (\Exception $e) {
 			return $this->getErrorResponse($e->getMessage());
 		}
 
-		$results = QueryBuilder::for($modelClass)
+		$results = QueryBuilder::for($className)
                                 ->allowedFields($this->getAllowedFields())
                                 ->allowedIncludes($this->getAllowedIncludes())
                                 ->allowedFilters($this->getAllowedFilters())
@@ -305,7 +323,18 @@ class ApiController extends Controller
                                 ->allowedAppends($this->getAllowedAppends())
                                 ->where($this->getWhereClauses());
 
-		return $resourceClass::collection($results->paginate(($this->perPage ? : config('api.pagination.items', 20)))->appends( \Illuminate\Support\Facades\Request::except('page') ) );
+        if ($request->input('limit')) {
+            $limit = intval($request->input('limit'));
+            $pageName = 'page';
+
+            return $resourceClass::collection((new LengthAwarePaginator($results->limit($limit)->get(), $limit, $this->getPerPage(), Paginator::resolveCurrentPage($pageName), [
+                'path' => Paginator::resolveCurrentPath(),
+                'pageName' => $pageName,
+            ]))->appends( \Illuminate\Support\Facades\Request::except('page')));
+        }
+
+		return $resourceClass::collection($results->paginate($this->getPerPage())
+                                                    ->appends( \Illuminate\Support\Facades\Request::except('page') ) );
 	}
 
 	/**
@@ -316,9 +345,9 @@ class ApiController extends Controller
 	 */
 	public function store(Request $request)
 	{
-		$modelClass = $this->guessModelClass();
+        $className = $this->guessModelClass();
 
-		$validation = Validator::make($request->all(), $this->getValidationRules('store'));
+		$validation = Validator::make($request->all(), $this->getValidationRules(self::AUTHORIZE_KEY_STORE));
 
 		if($validation->fails()){
 			return $this->getErrorResponse($validation->errors());
@@ -326,14 +355,14 @@ class ApiController extends Controller
 
 		try {
 			// authorize permission
-			if ($this->shouldAuthorize(['store', 'create'])) {
-				$this->authorize( 'store', $modelClass );
+			if ($this->shouldAuthorize([self::AUTHORIZE_KEY_STORE, 'create'])) {
+				$this->authorize( self::AUTHORIZE_KEY_STORE, $className );
 			}
 
 			$validated = $this->creating($request, $validation->validated());
 
 			if ($validated) {
-				$model = $modelClass::create( $validated );
+				$model = $className::create( $validated );
 				$model = $this->saved( $request, $model, $validated );
 			}
 		}
@@ -352,18 +381,18 @@ class ApiController extends Controller
 	 */
 	public function show($id)
 	{
-		$modelClass = $this->guessModelClass();
+        $className = $this->guessModelClass();
 
 		try {
-			$model = $this->findModel($modelClass, $id);
+			$model = $this->findModel($className, $id);
 
 			// authorize permission
-			if ($this->shouldAuthorize('view')) {
-				$this->authorize( 'view', $model );
+			if ($this->shouldAuthorize(self::AUTHORIZE_KEY_SHOW)) {
+				$this->authorize( self::AUTHORIZE_KEY_SHOW, $model );
 			}
 
 			if (!$model) {
-				throw (new ModelNotFoundException)->setModel($modelClass, $id);
+				throw (new ModelNotFoundException)->setModel($className, $id);
 			}
 		}
 		catch (\Exception $e) {
@@ -382,21 +411,21 @@ class ApiController extends Controller
 	 */
 	public function update(Request $request, $id)
 	{
-		$modelClass = $this->guessModelClass();
+        $className = $this->guessModelClass();
 
 		// validate given request
-		$validation = Validator::make($request->all(), $this->getValidationRules('update'));
+		$validation = Validator::make($request->all(), $this->getValidationRules(self::AUTHORIZE_KEY_UPDATE));
 
 		if($validation->fails()){
 			return $this->getErrorResponse($validation->errors());
 		}
 
 		try {
-			$model = $this->findModel($modelClass, $id);
+			$model = $this->findModel($className, $id);
 
 			// authorize permission
-			if ($this->shouldAuthorize(['update', 'edit'])) {
-				$this->authorize( 'update', $model );
+			if ($this->shouldAuthorize([self::AUTHORIZE_KEY_UPDATE, 'edit'])) {
+				$this->authorize( self::AUTHORIZE_KEY_UPDATE, $model );
 			}
 
 			$validated = $this->updating($request, $model, $validation->validated());
@@ -421,14 +450,14 @@ class ApiController extends Controller
 	 */
 	public function destroy(Request $request, $id)
 	{
-		$modelClass = $this->guessModelClass();
+        $className = $this->guessModelClass();
 
 		try {
-			$model = $this->findModel($modelClass, $id);
+			$model = $this->findModel($className, $id);
 
 			// authorize permission
-			if ($this->shouldAuthorize('destroy')) {
-				$this->authorize( 'destroy', $model );
+			if ($this->shouldAuthorize(self::AUTHORIZE_KEY_DESTROY)) {
+				$this->authorize( self::AUTHORIZE_KEY_DESTROY, $model );
 			}
 
 			$model->delete();

@@ -1,6 +1,5 @@
 {
     "name": "devlabor/laravel-api",
-    "version": "1.0.3",
     "keywords": [
         "devlabor",
         "api",
@@ -21,17 +20,14 @@
     "authors": [
         {
             "name": "Kiv4h",
-            "email": "reichardt@devlabor.com"
+            "email": "reichardt@devlabor.com",
+            "homepage": "https://devlabor.com",
+            "role": "Developer"
         }
     ],
     "autoload": {
         "psr-4": {
             "DevLabor\\Api\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "DevLabor\\Api\\Tests\\": "tests/"
         }
     },
     "extra": {
