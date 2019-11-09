@@ -121,7 +121,7 @@ trait ApiResourceTest {
      */
     public function testIndex()
     {
-        $response = $this->get($this->guessRoute('index'));
+        $response = $this->json('GET', $this->guessRoute('index'));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -137,7 +137,7 @@ trait ApiResourceTest {
      */
     public function testStore()
     {
-        $response = $this->post($this->guessRoute('store'), $this->getPayload());
+        $response = $this->json('POST', $this->guessRoute('store'), $this->getPayload());
 
         $data = $response->json();
 
@@ -162,7 +162,7 @@ trait ApiResourceTest {
      */
     public function testShow()
     {
-        $response = $this->get($this->guessRoute('show', [ self::$lastInsert ]));
+        $response = $this->json('GET', $this->guessRoute('show', [ self::$lastInsert ]));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -178,7 +178,7 @@ trait ApiResourceTest {
      */
     public function testUpdate()
     {
-        $response = $this->put($this->guessRoute('update', [ self::$lastInsert ]), $this->getPayload());
+        $response = $this->json('PUT', $this->guessRoute('update', [ self::$lastInsert ]), $this->getPayload());
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -194,7 +194,7 @@ trait ApiResourceTest {
      */
     public function testDestroy()
     {
-        $response = $this->delete($this->guessRoute('destroy', [ self::$lastInsert ]));
+        $response = $this->json('DELETE', $this->guessRoute('destroy', [ self::$lastInsert ]));
 
         $response
             ->assertStatus(Response::HTTP_OK);

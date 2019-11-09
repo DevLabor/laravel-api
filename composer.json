@@ -1,6 +1,5 @@
 {
     "name": "devlabor/laravel-api",
-    "version": "1.0.3",
     "keywords": [
         "devlabor",
         "api",
@@ -29,11 +28,6 @@
     "autoload": {
         "psr-4": {
             "DevLabor\\Api\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "DevLabor\\Api\\Tests\\": "tests/"
         }
     },
     "extra": {
