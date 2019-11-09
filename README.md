@@ -1,3 +1,9 @@
+# Build rapid apis.
+
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/devlabor/laravel-api)](https://packagist.org/packages/devlabor/laravel-api)
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=DevLabor_laravel-api&metric=alert_status)](https://sonarcloud.io/dashboard?id=DevLabor_laravel-api)
+[![Total Downloads](https://img.shields.io/packagist/dt/devlabor/laravel-api?style=flat)](https://packagist.org/packages/devlabor/laravel-api)
+
 This package is based on "spatie/laravel-query-builder" allows you to rapidly creating API controllers for your Laravel application. This package also works with authorization policies.
 
 ## Basic Usage
