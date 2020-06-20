@@ -1,6 +1,6 @@
 <?php
 
-namespace DevLabor\Api\Tests;
+namespace DevLabor\Api\Traits;
 
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
