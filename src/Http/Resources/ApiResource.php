@@ -7,35 +7,44 @@ use Illuminate\Support\Str;
 
 class ApiResource extends JsonResource
 {
-	protected $forcedModelName = null;
-	
+    /**
+     * @var string
+     */
+    protected $forcedModelName = '';
+
     /**
      * Transform the resource into an array.
      *
      * @param  \Illuminate\Http\Request  $request
+     *
      * @return array
      */
     public function toArray($request)
     {
-	    return $this->transformAttributes(parent::toArray($request));
+        return $this->transformAttributes(parent::toArray($request));
     }
-    
+
     /**
      * Transforms attributes
+     *
+     * @param array $attributes
+     *
+     * @return array
      */
-	protected function transformAttributes($attributes = []) {
-		$snakeName = Str::snake($this->forcedModelName ? : class_basename($this->resource));
-		
-		$additionalAttributes = [
-			'_model' => [
-				'endpoint' => Str::plural($snakeName),
-				'name' => $snakeName
-			]
-		];
+    protected function transformAttributes(array $attributes = [])
+    {
+        $snakeName = Str::snake($this->forcedModelName ? : class_basename($this->resource));
 
-		return array_merge(
-			$attributes,
-			$additionalAttributes
-		);
-	}
+        $additionalAttributes = [
+            '_model' => [
+                'endpoint' => Str::plural($snakeName),
+                'name' => $snakeName,
+            ],
+        ];
+
+        return array_merge(
+            $attributes,
+            $additionalAttributes
+        );
+    }
 }

@@ -5,10 +5,11 @@ namespace DevLabor\Api\Tests;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 
-trait ApiResourceTest {
+trait ApiResourceTest
+{
     /**
      * Last insert id.
-     * @var integer
+     * @var int
      */
     public static $lastInsert = null;
 
@@ -44,7 +45,7 @@ trait ApiResourceTest {
 
     /**
      * Last insert id
-     * @var integer
+     * @var int
      */
     protected $lastInsertID = null;
 
@@ -53,7 +54,8 @@ trait ApiResourceTest {
      *
      * @return null|string
      */
-    protected function guessModelClass() {
+    protected function guessModelClass()
+    {
         if (empty($this->modelClass)) {
             $this->modelClass = 'App\\' . str_replace('ApiResourceTest', '', class_basename(get_class($this)));
         }
@@ -66,7 +68,8 @@ trait ApiResourceTest {
      *
      * @return null|string
      */
-    protected function guessFactoryClass() {
+    protected function guessFactoryClass()
+    {
         if (empty($this->factoryClass)) {
             $this->factoryClass = $this->guessModelClass();
         }
@@ -79,7 +82,8 @@ trait ApiResourceTest {
      *
      * @return null|string
      */
-    protected function guessRouteName() {
+    protected function guessRouteName()
+    {
         if (empty($this->routeName)) {
             $this->routeName = Str::snake(Str::plural(class_basename($this->guessModelClass())));
         }
@@ -92,14 +96,16 @@ trait ApiResourceTest {
      *
      * @return null|string
      */
-    protected function guessRoute($action, $parameters = []) {
+    protected function guessRoute($action, $parameters = [])
+    {
         return route(($this->routeApiPrefix ? $this->routeApiPrefix . '.' : '') . Str::snake(Str::plural(class_basename($this->guessModelClass()))) . '.' . $action, $parameters);
     }
 
     /**
      * @return bool
      */
-    protected function useFactory() {
+    protected function useFactory()
+    {
         return ($this->useFactory ? : false);
     }
 
@@ -108,7 +114,8 @@ trait ApiResourceTest {
      *
      * @return array
      */
-    protected function getPayload() {
+    protected function getPayload()
+    {
         if ($this->useFactory()) {
             return factory($this->guessFactoryClass())->raw();
         }
@@ -148,12 +155,12 @@ trait ApiResourceTest {
         $response
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonStructure([
-                'id'
+                'id',
             ])
             ->assertJson([
                 '_model' => [
-                    'endpoint' => $this->guessRouteName()
-                ]
+                    'endpoint' => $this->guessRouteName(),
+                ],
             ]);
     }
 
@@ -168,8 +175,8 @@ trait ApiResourceTest {
             ->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 '_model' => [
-                    'endpoint' => $this->guessRouteName()
-                ]
+                    'endpoint' => $this->guessRouteName(),
+                ],
             ]);
     }
 
@@ -184,8 +191,8 @@ trait ApiResourceTest {
             ->assertStatus(Response::HTTP_OK)
             ->assertJson([
                 '_model' => [
-                    'endpoint' => $this->guessRouteName()
-                ]
+                    'endpoint' => $this->guessRouteName(),
+                ],
             ]);
     }
 

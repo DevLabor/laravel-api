@@ -1,4 +1,4 @@
-# Build rapid apis.
+# Laravel Package for building REST API rapidly.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/devlabor/laravel-api)](https://packagist.org/packages/devlabor/laravel-api)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=DevLabor_laravel-api&metric=alert_status)](https://sonarcloud.io/dashboard?id=DevLabor_laravel-api)
@@ -15,7 +15,8 @@ use DevLabor\Api\Http\Controllers\ApiController;
 
 // ...
 
-class ProductApiController extends ApiController {
+class ProductApiController extends ApiController
+{
 // ...
 }
 ```
@@ -33,12 +34,11 @@ Sometimes you need an identifcation for the object in your api. For this reason,
 ```php
 use DevLabor\Api\Http\Resources\ApiResource;
 
-class Product extends ApiResource {
+class Product extends ApiResource
+{
 //
 }
 ```
-
-
 
 ## Installation
 
@@ -74,11 +74,11 @@ By adapting the `$authorizeAbilities` member in the controller class, the author
 // ...
 
 protected $authorizeAbilities = [
-'viewAny', // index
-'view', // show
-'store',
-'update',
-'destroy'
+	'viewAny', // index
+	'view', // show
+	'store',
+	'update',
+	'destroy'
 ];
 ```
 
@@ -91,15 +91,6 @@ You are able to disable the complete check with following member change in your 
 ```php
 protected $authorizeAbilities = false;
 ```
-
-Extend your API routes within `routes/api.php`:
-
-```php
-// ...
-
-Route::resource('products', 'Api\ProductApiController');
-```
-
 
 ### Testing
 
