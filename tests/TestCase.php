@@ -2,8 +2,8 @@
 
 namespace DevLabor\Api\Tests;
 
-use Orchestra\Testbench\TestCase as Orchestra;
 use DevLabor\Api\ApiServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
