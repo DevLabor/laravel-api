@@ -4,7 +4,6 @@ namespace DevLabor\Api\Tests;
 
 use DevLabor\Api\ApiServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as Orchestra;
 
