@@ -2,8 +2,11 @@
 
 namespace DevLabor\Api\Tests;
 
-use Orchestra\Testbench\TestCase as Orchestra;
 use DevLabor\Api\ApiServiceProvider;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Route;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra
 {
@@ -15,6 +18,9 @@ class TestCase extends Orchestra
         parent::setUp();
 
         $this->withFactories(__DIR__.'/database/factories');
+
+        $this->setUpDatabase($this->app);
+        $this->setUpRoutes($this->app);
     }
 
     /**
@@ -27,6 +33,31 @@ class TestCase extends Orchestra
         return [
             ApiServiceProvider::class,
         ];
+    }
+
+    /**
+     * @param $app
+     */
+    protected function setUpDatabase($app)
+    {
+        $app['db']->connection()->getSchemaBuilder()->create('projects', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('title');
+            $table->string('description');
+        });
+    }
+
+    /**
+     * @param $app
+     */
+    protected function setUpRoutes($app)
+    {
+        Route::prefix('api')
+            ->name('api.')
+            ->namespace('DevLabor\Api\Tests\Http\Controllers')
+            ->group(function () {
+                Route::resource('projects', 'ProjectApiController');
+            });
     }
 
     /**

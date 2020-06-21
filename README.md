@@ -1,6 +1,7 @@
 # Laravel Package for building REST API rapidly.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/devlabor/laravel-api)](https://packagist.org/packages/devlabor/laravel-api)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/devlabor/laravel-api/run-tests?label=tests)](https://github.com/devlabor/laravel-api/actions?query=workflow%3Arun-tests+branch%3Amaster)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=DevLabor_laravel-api&metric=alert_status)](https://sonarcloud.io/dashboard?id=DevLabor_laravel-api)
 [![Total Downloads](https://img.shields.io/packagist/dt/devlabor/laravel-api?style=flat)](https://packagist.org/packages/devlabor/laravel-api)
 
@@ -58,7 +59,7 @@ This is the contents of the published config file:
 return [
 	'pagination' => [
 		/**
-		 * Number of items returned in index()
+		 * Number of items per page returned in index()
 		 */
 		'items' => 20
 	]

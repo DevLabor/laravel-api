@@ -2,7 +2,7 @@
 
 namespace DevLabor\Api\Tests;
 
-class ExampleTest extends TestCase
+class ApiControllerTest extends TestCase
 {
     /** @test */
     public function true_is_true()

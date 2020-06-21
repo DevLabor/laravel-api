@@ -9,27 +9,15 @@ trait ApiResourceTest
 {
     /**
      * Last insert id.
-     * @var int
+     * @var int|null
      */
     public static $lastInsert = null;
-
-    /**
-     * Guessed model class.
-     * @var string
-     */
-    protected $modelClass = null;
-
-    /**
-     * Guessed factory class.
-     * @var string
-     */
-    protected $factoryClass = null;
 
     /**
      * Guessed routeName.
      * @var string
      */
-    protected $routeName = null;
+    protected $routeName = '';
 
     /**
      * Prefix for api route.
@@ -42,12 +30,6 @@ trait ApiResourceTest
      * @var array
      */
     protected $payload = [];
-
-    /**
-     * Last insert id
-     * @var int
-     */
-    protected $lastInsertID = null;
 
     /**
      * Guess model class name.
@@ -98,15 +80,17 @@ trait ApiResourceTest
      */
     protected function guessRoute($action, $parameters = [])
     {
-        return route(($this->routeApiPrefix ? $this->routeApiPrefix . '.' : '') . Str::snake(Str::plural(class_basename($this->guessModelClass()))) . '.' . $action, $parameters);
+        return route(($this->routeApiPrefix ? $this->routeApiPrefix . '.' : '') . $this->guessRouteName() . '.' . $action, $parameters);
     }
 
     /**
+     * Enable data by factory class.
+     *
      * @return bool
      */
     protected function useFactory()
     {
-        return ($this->useFactory ? : false);
+        return true;
     }
 
     /**

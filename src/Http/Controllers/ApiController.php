@@ -32,6 +32,12 @@ class ApiController extends Controller
     protected $modelClass = '';
 
     /**
+     * Guessed resource class.
+     * @var string
+     */
+    protected $resourceClass = '';
+
+    /**
      * Posts per api call
      * @var int|null
      */
@@ -152,7 +158,11 @@ class ApiController extends Controller
      */
     protected function guessResourceClass()
     {
-        return 'App\\Http\\Resources\\' . (class_basename($this->modelClass) ? : str_replace('ApiController', '', class_basename(get_class($this))));
+        if (empty($this->resourceClass)) {
+            $this->resourceClass = 'App\\Http\\Resources\\' . (class_basename($this->modelClass) ? : str_replace('ApiController', '', class_basename(get_class($this))));
+        }
+
+        return $this->resourceClass;
     }
 
     /**
