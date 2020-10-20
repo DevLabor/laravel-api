@@ -82,6 +82,21 @@ protected $authorizeAbilities = [
 ];
 ```
 
+### Configure custom paths
+```php
+    /**
+     * Models location
+     * @var string
+     */
+    protected $modelPath = 'App\\Models\\';
+
+    /**
+     * Resources location
+     * @var string
+     */
+    protected $resourcePath = 'App\\Http\\Resources\\';
+```
+
 For more information about policies, take a look at Laravel's [Creating Policies](https://laravel.com/docs/5.8/authorization#creating-policies)
 
 ### Disable policy authorization

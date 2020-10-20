@@ -20,6 +20,24 @@ class ApiController extends Controller
     const AUTHORIZE_KEY_UPDATE = 'update';
     const AUTHORIZE_KEY_DESTROY = 'destroy';
 
+    /**
+     * Models location
+     * @var string
+     */
+    protected $modelPath = 'App\\Models\\';
+
+    /**
+     * Resources location
+     * @var string
+     */
+    protected $resourcePath = 'App\\Http\\Resources\\';
+
+    /**
+     * Controller append name
+     * @var string
+     */
+    protected $appendName = ['Controller', 'ApiController'];
+
 	/**
 	 * Guessed model class.
 	 * @var string
@@ -130,7 +148,7 @@ class ApiController extends Controller
 	 */
 	protected function guessModelClass() {
 		if (empty($this->modelClass)) {
-			$this->modelClass = 'App\\' . str_replace('ApiController', '', class_basename(get_class($this)));
+			$this->modelClass = $this->modelPath . str_replace($this->appendName, '', class_basename(get_class($this)));
 		}
 
 		return $this->modelClass;
@@ -142,7 +160,7 @@ class ApiController extends Controller
 	 * @return string
 	 */
 	protected function guessResourceClass() {
-		return 'App\\Http\\Resources\\' . ( class_basename($this->modelClass) ? : str_replace('ApiController', '', class_basename(get_class($this))));
+		return $this->resourcePath . ( class_basename($this->modelClass) ? : str_replace($this->appendName, '', class_basename(get_class($this))));
 	}
 
 	/**
