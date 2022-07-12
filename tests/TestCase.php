@@ -3,6 +3,7 @@
 namespace DevLabor\Api\Tests;
 
 use DevLabor\Api\ApiServiceProvider;
+use DevLabor\Api\Tests\Http\Controllers\ProjectApiController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as Orchestra;
@@ -15,8 +16,6 @@ class TestCase extends Orchestra
     public function setUp(): void
     {
         parent::setUp();
-
-        $this->withFactories(__DIR__.'/database/factories');
 
         $this->setUpDatabase($this->app);
         $this->setUpRoutes($this->app);
@@ -53,9 +52,8 @@ class TestCase extends Orchestra
     {
         Route::prefix('api')
             ->name('api.')
-            ->namespace('DevLabor\Api\Tests\Http\Controllers')
             ->group(function () {
-                Route::resource('projects', 'ProjectApiController');
+                Route::resource('projects', ProjectApiController::class);
             });
     }
 
@@ -69,6 +67,20 @@ class TestCase extends Orchestra
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',
+        ]);
+
+        // default query-builder config
+        $app['config']->set('query-builder', [
+            'parameters' => [
+                'include' => 'include',
+                'filter' => 'filter',
+                'sort' => 'sort',
+                'fields' => 'fields',
+                'append' => 'append',
+            ],
+            'count_suffix' => 'Count',
+            'disable_invalid_filter_query_exception' => false,
+            'request_data_source' => 'query_string',
         ]);
     }
 }

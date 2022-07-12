@@ -26,6 +26,24 @@ class ApiController extends Controller
     const AUTHORIZE_KEY_DESTROY = 'destroy';
 
     /**
+     * Models location
+     * @var string
+     */
+    protected $modelPath = 'App\\Models\\';
+
+    /**
+     * Resources location
+     * @var string
+     */
+    protected $resourcePath = 'App\\Http\\Resources\\';
+
+    /**
+     * Controller append name
+     * @var string[]
+     */
+    protected $appendName = ['Controller', 'ApiController'];
+
+    /**
      * Guessed model class.
      * @var string
      */
@@ -66,12 +84,6 @@ class ApiController extends Controller
      * @var array
      */
     protected $allowedSorts = [];
-
-    /**
-     * List of allowed appends
-     * @var array
-     */
-    protected $allowedAppends = [];
 
     /**
      * List of allowed fields
@@ -126,7 +138,6 @@ class ApiController extends Controller
         $model = QueryBuilder::for($className)
                              ->allowedFields($this->getAllowedFields())
                              ->allowedIncludes($this->getAllowedIncludes())
-                             ->allowedAppends($this->getAllowedAppends())
                              ->where('id', $id)
                              ->first();
 
@@ -145,7 +156,7 @@ class ApiController extends Controller
     protected function guessModelClass()
     {
         if (empty($this->modelClass)) {
-            $this->modelClass = 'App\\' . str_replace('ApiController', '', class_basename(get_class($this)));
+            $this->modelClass = $this->modelPath . str_replace($this->appendName, '', class_basename(get_class($this)));
         }
 
         return $this->modelClass;
@@ -159,7 +170,7 @@ class ApiController extends Controller
     protected function guessResourceClass()
     {
         if (empty($this->resourceClass)) {
-            $this->resourceClass = 'App\\Http\\Resources\\' . (class_basename($this->modelClass) ? : str_replace('ApiController', '', class_basename(get_class($this))));
+            return $this->resourcePath . (class_basename($this->modelClass) ? : str_replace($this->appendName, '', class_basename(get_class($this))));
         }
 
         return $this->resourceClass;
@@ -193,16 +204,6 @@ class ApiController extends Controller
     protected function getAllowedSorts()
     {
         return $this->allowedSorts;
-    }
-
-    /**
-     * Returns allowed sort fields.
-     *
-     * @return array
-     */
-    protected function getAllowedAppends()
-    {
-        return $this->allowedAppends;
     }
 
     /**
@@ -352,7 +353,6 @@ class ApiController extends Controller
                                 ->allowedFilters($this->getAllowedFilters())
                                 ->defaultSorts($this->getDefaultSorts())
                                 ->allowedSorts($this->getAllowedSorts())
-                                ->allowedAppends($this->getAllowedAppends())
                                 ->where($this->getWhereClauses());
 
         if ($request->input('limit')) {

@@ -19,16 +19,16 @@
         }
     ],
     "require": {
-        "php": "^7.3",
-        "spatie/laravel-query-builder": "^2.1",
+        "php": "^8.0",
+        "spatie/laravel-query-builder": "^5.0",
         "ext-json": "*"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.16",
-        "orchestra/testbench": "^5.0",
+        "friendsofphp/php-cs-fixer": "^3.0",
+        "orchestra/testbench": "^7.0",
         "phpunit/phpunit": "^9.0",
-        "psalm/plugin-laravel": "^1.2",
-        "vimeo/psalm": "^3.11"
+        "psalm/plugin-laravel": "^2.0",
+        "vimeo/psalm": "^4.0"
     },
     "autoload": {
         "psr-4": {
@@ -37,7 +37,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "DevLabor\\Api\\Tests\\": "tests"
+            "DevLabor\\Api\\Tests\\": "tests",
+            "DevLabor\\Api\\Tests\\Database\\Factories\\": "tests/database/factories"
         }
     },
     "extra": {

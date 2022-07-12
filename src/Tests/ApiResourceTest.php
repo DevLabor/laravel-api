@@ -8,12 +8,6 @@ use Illuminate\Support\Str;
 trait ApiResourceTest
 {
     /**
-     * Last insert id.
-     * @var int|null
-     */
-    public static $lastInsert = null;
-
-    /**
      * Guessed routeName.
      * @var string
      */
@@ -101,10 +95,20 @@ trait ApiResourceTest
     protected function getPayload()
     {
         if ($this->useFactory()) {
-            return factory($this->guessFactoryClass())->raw();
+            return $this->guessModelClass()::factory()->raw();
         }
 
         return $this->payload;
+    }
+
+    /**
+     * Create one instance of a model using a factory.
+     *
+     * @return int id of new model instance
+     */
+    protected function createModel()
+    {
+        return $this->guessModelClass()::factory()->create()->id;
     }
 
     /**
@@ -130,12 +134,6 @@ trait ApiResourceTest
     {
         $response = $this->json('POST', $this->guessRoute('store'), $this->getPayload());
 
-        $data = $response->json();
-
-        if (isset($data['id'])) {
-            self::$lastInsert = $data['id'];
-        }
-
         $response
             ->assertStatus(Response::HTTP_CREATED)
             ->assertJsonStructure([
@@ -153,7 +151,9 @@ trait ApiResourceTest
      */
     public function testShow()
     {
-        $response = $this->json('GET', $this->guessRoute('show', [ self::$lastInsert ]));
+        $id = $this->createModel();
+
+        $response = $this->json('GET', $this->guessRoute('show', [ $id ]));
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -169,7 +169,9 @@ trait ApiResourceTest
      */
     public function testUpdate()
     {
-        $response = $this->json('PUT', $this->guessRoute('update', [ self::$lastInsert ]), $this->getPayload());
+        $id = $this->createModel();
+
+        $response = $this->json('PUT', $this->guessRoute('update', [ $id ]), $this->getPayload());
 
         $response
             ->assertStatus(Response::HTTP_OK)
@@ -185,7 +187,9 @@ trait ApiResourceTest
      */
     public function testDestroy()
     {
-        $response = $this->json('DELETE', $this->guessRoute('destroy', [ self::$lastInsert ]));
+        $id = $this->createModel();
+
+        $response = $this->json('DELETE', $this->guessRoute('destroy', [ $id ]));
 
         $response
             ->assertStatus(Response::HTTP_OK);
