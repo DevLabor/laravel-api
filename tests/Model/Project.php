@@ -2,10 +2,15 @@
 
 namespace DevLabor\Api\Tests\Model;
 
+use DevLabor\Api\Tests\Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    use HasFactory;
+
     /**
      * @var string[]
      */
@@ -18,4 +23,10 @@ class Project extends Model
      * @var bool
      */
     public $timestamps = false;
+
+    /** @return Factory<static>  */
+    protected static function newFactory()
+    {
+        return ProjectFactory::new();
+    }
 }
