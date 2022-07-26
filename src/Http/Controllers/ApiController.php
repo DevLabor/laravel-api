@@ -41,7 +41,7 @@ class ApiController extends Controller
      * Controller append name
      * @var string[]
      */
-    protected $appendName = ['Controller', 'ApiController'];
+    protected $appendName = ['ApiController', 'Controller'];
 
     /**
      * Guessed model class.
