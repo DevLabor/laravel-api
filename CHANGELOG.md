@@ -2,6 +2,9 @@
 
 All notable changes to `laravel-api` will be documented in this file
 
+## 2.0.1 - 2022-07-26
+- fix model class guessing
+
 ## 2.0.0 - 2022-07-12
 - Updated spatie/laravel-query-builder to 5.x ([Upgrade Guide](https://github.com/spatie/laravel-query-builder/blob/main/UPGRADING.md#from-v4-to-v5))
    - Dropped support for laravel 8 and below
